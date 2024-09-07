@@ -33,7 +33,7 @@ memhive_sub_tp_init(MemHiveSub *o, PyObject *args, PyObject *kwds)
     o->hive = (RemoteObject*)hive_ptr;
     module_state *state = MemHive_GetModuleStateByPythonType(Py_TYPE(o));
 
-    ssize_t channel = MemHive_RegisterSub((MemHive*)o->hive, o, state);
+    Py_ssize_t channel = MemHive_RegisterSub((MemHive*)o->hive, o, state);
     if (channel < 0) {
         return -1;
     }

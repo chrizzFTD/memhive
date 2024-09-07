@@ -2,7 +2,13 @@
 #define MEMHIVE_QUEUE_H
 
 #include <stdint.h>
+
+#ifdef _WIN32
 #include <pthread.h>
+#else
+#include <pthread.h>
+#endif
+
 
 #include "Python.h"
 
@@ -13,11 +19,11 @@ typedef struct {
     pthread_cond_t cond;
 
     struct queue *queues;
-    ssize_t nqueues;
-    ssize_t max_queues;
+    Py_ssize_t nqueues;
+    Py_ssize_t max_queues;
 
     struct item *reuse;
-    ssize_t reuse_num;
+    Py_ssize_t reuse_num;
 
     uint8_t closed;
     uint8_t destroyed;
@@ -39,7 +45,7 @@ typedef struct {
     PyObject *r_owner;
     PyObject *r_arg;
     memqueue_direction_t r_dir;
-    ssize_t r_channel;
+    Py_ssize_t r_channel;
     uint64_t r_id;
     uint8_t r_used;
 } MemQueueRequest;
@@ -60,14 +66,14 @@ extern PyType_Spec MemQueueResponse_TypeSpec;
 extern PyType_Spec MemQueueRequest_TypeSpec;
 extern PyType_Spec MemQueueBroadcast_TypeSpec;
 
-ssize_t
+Py_ssize_t
 MemQueue_AddChannel(MemQueue *queue, module_state *state);
 
 int
 MemQueue_Put(MemQueue *queue,
              module_state *state,
              memqueue_event_t kind,
-             ssize_t channel,
+             Py_ssize_t channel,
              PyObject *sender,
              uint64_t id,
              PyObject *val);
@@ -78,20 +84,20 @@ MemQueue_HubBroadcast(MemQueue *queue,  module_state *state,
 
 int
 MemQueue_HubPush(MemQueue *queue, module_state *state,
-                 ssize_t channel, PyObject *sender, uint64_t id, PyObject *val);
+                 Py_ssize_t channel, PyObject *sender, uint64_t id, PyObject *val);
 
 int
 MemQueue_HubRequest(MemQueue *queue, module_state *state,
-                    ssize_t channel, PyObject *sender, uint64_t id, PyObject *val);
+                    Py_ssize_t channel, PyObject *sender, uint64_t id, PyObject *val);
 
 int
 MemQueue_Listen(MemQueue *queue, module_state *state,
-                ssize_t channel,
+                Py_ssize_t channel,
                 memqueue_event_t *event, RemoteObject **sender,
                 uint64_t *id, RemoteObject **val);
 
 int
-MemQueue_Init(MemQueue *queue, ssize_t max_side_channels);
+MemQueue_Init(MemQueue *queue, Py_ssize_t max_side_channels);
 
 int
 MemQueue_Close(MemQueue *queue, module_state *state);
@@ -104,7 +110,7 @@ MemQueueRequest_New(module_state *state,
                     PyObject *owner,
                     PyObject *arg,
                     memqueue_direction_t dir,
-                    ssize_t channel,
+                    Py_ssize_t channel,
                     uint64_t id);
 
 PyObject *

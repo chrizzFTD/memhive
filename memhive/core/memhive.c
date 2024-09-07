@@ -47,14 +47,14 @@ err:
     return -1;
 }
 
-MEMHIVE_REMOTE(ssize_t)
+MEMHIVE_REMOTE(Py_ssize_t)
 MemHive_RegisterSub(MemHive *hive, MemHiveSub *sub,
                     module_state *remote_state)
 {
     pthread_mutex_lock(&hive->subs_list_mut);
 
     // Adding channel might fail, so do it first.
-    ssize_t channel = MemQueue_AddChannel(&hive->for_subs, remote_state);
+    Py_ssize_t channel = MemQueue_AddChannel(&hive->for_subs, remote_state);
     if (channel < 0) {
         goto err_from_locked;
     }

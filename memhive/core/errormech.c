@@ -150,13 +150,13 @@ Notes:
 
 
 static PyObject *
-new_none_tuple(ssize_t size)
+new_none_tuple(Py_ssize_t  size)
 {
     PyObject *tup = PyTuple_New(size);
     if (tup == NULL) {
         return NULL;
     }
-    for (ssize_t i = 0; i < size; i++) {
+    for (Py_ssize_t  i = 0; i < size; i++) {
         PyTuple_SET_ITEM(tup, i, Py_None);
     }
     return tup;
@@ -167,12 +167,12 @@ static PyObject *
 list_to_tuple(PyObject *lst)
 {
     assert(PyList_CheckExact(lst));
-    ssize_t size = Py_SIZE(lst);
+    Py_ssize_t size = Py_SIZE(lst);
     PyObject *tup = PyTuple_New(size);
     if (tup == NULL) {
         return NULL;
     }
-    for (ssize_t i = 0; i < size; i++) {
+    for (Py_ssize_t i = 0; i < size; i++) {
         PyObject *el = PyList_GET_ITEM(lst, i);
         PyTuple_SET_ITEM(tup, i, el);
         Py_INCREF(el);
@@ -213,7 +213,7 @@ reflect_tb(PyObject *tb_list, PyTracebackObject *tb)
     TB_SET_FUNCNAME(ser, fn);
     Py_INCREF(fn);
 
-    ssize_t lineno = (ssize_t)tb->tb_lineno;
+    Py_ssize_t lineno = (Py_ssize_t)tb->tb_lineno;
     if (lineno == -1) {
         lineno = PyCode_Addr2Line(code, tb->tb_lasti);
         if (lineno < 0) {
@@ -244,7 +244,7 @@ done:
 }
 
 
-static ssize_t
+static Py_ssize_t
 reflect_error(PyObject *err, PyObject *memo, PyObject *ret)
 {
     int is_group = _PyBaseExceptionGroup_Check(err);
@@ -286,10 +286,10 @@ reflect_error(PyObject *err, PyObject *memo, PyObject *ret)
                 goto err;
             }
 
-            for (ssize_t i = 0; i < Py_SIZE(group); i++) {
+            for (Py_ssize_t i = 0; i < Py_SIZE(group); i++) {
                 PyObject *groupped_error = PyTuple_GetItem(group, i);
                 assert(groupped_error != NULL);
-                ssize_t er = reflect_error(groupped_error, memo, ret);
+                Py_ssize_t er = reflect_error(groupped_error, memo, ret);
                 if (er < 0) {
                     goto err;
                 }
@@ -353,7 +353,7 @@ reflect_error(PyObject *err, PyObject *memo, PyObject *ret)
             // do nothing
             Py_DECREF(cause);
         } else {
-            ssize_t cp = reflect_error(cause, memo, ret);
+            Py_ssize_t cp = reflect_error(cause, memo, ret);
             Py_DECREF(cause);
             if (cp < 0) {
                 goto err;
@@ -372,7 +372,7 @@ reflect_error(PyObject *err, PyObject *memo, PyObject *ret)
             // do nothing
             Py_DECREF(context);
         } else {
-            ssize_t cp = reflect_error(context, memo, ret);
+            Py_ssize_t cp = reflect_error(context, memo, ret);
             Py_DECREF(context);
             if (cp < 0) {
                 goto err;
@@ -390,7 +390,7 @@ reflect_error(PyObject *err, PyObject *memo, PyObject *ret)
     }
     Py_DECREF(reflected_error);
 
-    ssize_t p = Py_SIZE(ret) - 1;
+    Py_ssize_t p = Py_SIZE(ret) - 1;
     PyObject *pp = PyLong_FromSsize_t(p);
     if (pp == NULL) {
         goto err;
@@ -625,7 +625,7 @@ make_error_type(module_state *state, RemoteObject *name, int is_group)
 static PyObject *
 fetch_reflected_error(RemoteObject *index, PyObject *memo)
 {
-    ssize_t p = PyLong_AsSsize_t((PyObject*)index);
+    Py_ssize_t p = PyLong_AsSsize_t((PyObject*)index);
     if (p < 0) {
         if (PyErr_Occurred() != NULL) {
             return NULL;
@@ -652,7 +652,7 @@ fetch_reflected_error(RemoteObject *index, PyObject *memo)
 
 static int
 restore_error(module_state *state,
-              RemoteObject *errors_desc, ssize_t index, PyObject *memo)
+              RemoteObject *errors_desc, Py_ssize_t index, PyObject *memo)
 {
     assert(PyTuple_CheckExact(errors_desc));
     assert(PyTuple_CheckExact(memo));
@@ -691,7 +691,7 @@ restore_error(module_state *state,
             goto error;
         }
 
-        for (ssize_t i = 0; i < Py_SIZE(group_excs); i++) {
+        for (Py_ssize_t i = 0; i < Py_SIZE(group_excs); i++) {
             PyObject *exc = fetch_reflected_error(
                 (RemoteObject *)PyTuple_GET_ITEM(group_excs, i),
                 memo
@@ -726,7 +726,7 @@ restore_error(module_state *state,
     }
 
     PyTracebackObject *tb = NULL;
-    for (ssize_t i = 0; i < Py_SIZE(tbs); i++) {
+    for (Py_ssize_t i = 0; i < Py_SIZE(tbs); i++) {
         RemoteObject *tl = (RemoteObject *)PyTuple_GET_ITEM((PyObject*)tbs, i);
         assert(tl != NULL);
         assert(PyTuple_CheckExact(tl));
@@ -793,14 +793,14 @@ MemHive_RestoreError(module_state *state, RemoteObject *errors_desc)
     }
 
     PyObject *memo = NULL;
-    ssize_t size = Py_SIZE(errors_desc);
+    Py_ssize_t size = Py_SIZE(errors_desc);
 
     memo = PyTuple_New(size);
     if (memo == NULL) {
         goto err;
     }
 
-    for (ssize_t i = 0; i < size; i++) {
+    for (Py_ssize_t i = 0; i < size; i++) {
         if (restore_error(state, errors_desc, i, memo) < 0) {
             goto err;
         }

@@ -17,7 +17,7 @@ struct item {
 struct queue {
     struct item *first;
     struct item *last;
-    ssize_t length;
+    Py_ssize_t length;
 };
 
 static void
@@ -97,7 +97,7 @@ queue_put(MemQueue *queue, struct queue *q,
 }
 
 int
-MemQueue_Init(MemQueue *o, ssize_t max_side_channels)
+MemQueue_Init(MemQueue *o, Py_ssize_t max_side_channels)
 {
     if (pthread_mutex_init(&o->mut, NULL)) {
         Py_FatalError("Failed to initialize a mutex");
@@ -129,10 +129,10 @@ MemQueue_Init(MemQueue *o, ssize_t max_side_channels)
     return 0;
 }
 
-ssize_t
+Py_ssize_t
 MemQueue_AddChannel(MemQueue *queue, module_state *state)
 {
-    ssize_t channel;
+    Py_ssize_t channel;
 
     if (queue_lock(queue, state)) {
         return -1;
@@ -165,7 +165,7 @@ MemQueue_HubBroadcast(MemQueue *queue,  module_state *state,
         return -1;
     }
 
-    for (ssize_t i = 1; i < queue->nqueues; i++) {
+    for (Py_ssize_t i = 1; i < queue->nqueues; i++) {
         if (queue_put(queue, &queue->queues[i],
                       sender, E_HUB_BROADCAST, 0, msg))
         {
@@ -180,7 +180,7 @@ MemQueue_HubBroadcast(MemQueue *queue,  module_state *state,
 
 MEMHIVE_REMOTE(int)
 MemQueue_HubRequest(MemQueue *queue, module_state *state,
-                    ssize_t channel, PyObject *sender, uint64_t id, PyObject *val)
+                    Py_ssize_t channel, PyObject *sender, uint64_t id, PyObject *val)
 {
     assert(val != NULL);
     return MemQueue_Put(queue, state, E_HUB_REQUEST, channel, sender, id, val);
@@ -188,7 +188,7 @@ MemQueue_HubRequest(MemQueue *queue, module_state *state,
 
 int
 MemQueue_HubPush(MemQueue *queue, module_state *state,
-                 ssize_t channel, PyObject *sender, uint64_t id, PyObject *val)
+                 Py_ssize_t channel, PyObject *sender, uint64_t id, PyObject *val)
 {
     return MemQueue_Put(queue, state, E_HUB_PUSH, channel, sender, id, val);
 }
@@ -197,7 +197,7 @@ MEMHIVE_REMOTE(int)
 MemQueue_Put(MemQueue *queue,
              module_state *state,
              memqueue_event_t kind,
-             ssize_t channel,
+             Py_ssize_t channel,
              PyObject *sender,
              uint64_t id,
              PyObject *val)
@@ -212,7 +212,7 @@ MemQueue_Put(MemQueue *queue,
 
 MEMHIVE_REMOTE(int)
 MemQueue_Listen(MemQueue *queue, module_state *state,
-                ssize_t channel,
+                Py_ssize_t channel,
                 memqueue_event_t *event, RemoteObject **sender,
                 uint64_t *id, RemoteObject **val)
 {
@@ -327,7 +327,7 @@ MemQueue_Destroy(MemQueue *queue)
     }
     queue->reuse_num = 0;
 
-    for (ssize_t i = 0; i < queue->nqueues; i++) {
+    for (Py_ssize_t i = 0; i < queue->nqueues; i++) {
         struct queue *q = &queue->queues[i];
         while (q->first != NULL) {
             struct item *next = q->first->next;
@@ -349,7 +349,7 @@ MemQueueRequest_New(module_state *state,
                     PyObject *owner,
                     PyObject *arg,
                     memqueue_direction_t dir,
-                    ssize_t channel,
+                    Py_ssize_t channel,
                     uint64_t id)
 {
     MemQueueRequest *o = PyObject_GC_New(

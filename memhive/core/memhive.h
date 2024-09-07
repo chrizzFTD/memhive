@@ -2,12 +2,17 @@
 #define MEMHIVE_MH_H
 
 // We need a threadsafe malloc, so C11 it is.
-#if __STDC_VERSION__ < 201112L
+#if !defined(_MSC_VER) && __STDC_VERSION__ < 201112L
 #error "This header file requires C11"
 #endif
 
 #include <stdint.h>
+
+#ifdef _WIN32
 #include <pthread.h>
+#else
+#include <pthread.h>
+#endif
 
 #include "Python.h"
 
@@ -46,7 +51,7 @@ typedef struct {
 
     RemoteObject *hive;
     uint64_t sub_id;
-    ssize_t channel;
+    Py_ssize_t channel;
 
     RefQueue *main_refs;
     RefQueue *subs_refs;
@@ -100,7 +105,7 @@ Py_ssize_t MemHive_Len(
 PyObject * MemHive_Get(module_state *state, MemHive *hive, PyObject *key);
 int MemHive_Contains(module_state *state, MemHive *hive, PyObject *key);
 
-ssize_t
+Py_ssize_t
 MemHive_RegisterSub(MemHive *hive, MemHiveSub *sub, module_state *state);
 
 void
