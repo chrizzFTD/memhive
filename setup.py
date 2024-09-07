@@ -36,6 +36,10 @@ else:
 if platform.uname().system != 'Windows':
     CFLAGS.extend(['-std=c11', '-fsigned-char', '-Wall',
                    '-Wsign-compare', '-Wconversion'])
+else:
+    CFLAGS.extend(['/FS', '/W3'])
+    pthreads_lib_path = os.path.join(os.environ['CONDA_PREFIX'], 'Library', 'lib')
+    pthreads_include_path = os.path.join(os.environ['CONDA_PREFIX'], 'Library', 'include')
 
 
 with open(os.path.join(
@@ -74,7 +78,14 @@ if platform.python_implementation() == 'CPython':
             ],
             extra_compile_args=CFLAGS,
             define_macros=define_macros,
-            undef_macros=undef_macros
+            undef_macros=undef_macros,
+            include_dirs=[
+                pthreads_include_path,
+            ],
+            libraries=['pthread'],
+            library_dirs=[
+                pthreads_lib_path,
+            ],
         )
     ]
 else:
